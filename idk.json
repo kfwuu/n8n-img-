@@ -1,75 +1,173 @@
 {
-  "name": "img copy (PUBLIC TEMPLATE)",
+  "name": "img copy",
   "nodes": [
     {
+      "parameters": {},
       "type": "n8n-nodes-base.manualTrigger",
-      "name": "Manual Trigger",
-      "position": [-1000, 0]
+      "typeVersion": 1,
+      "position": [
+        -1024,
+        0
+      ],
+      "id": "b5f3584d-8607-48c5-8375-adac798b7c11",
+      "name": "When clicking \u2018Execute workflow\u2019"
     },
-
     {
-      "type": "n8n-nodes-base.set",
-      "name": "Set Inspiration Images",
-      "position": [-760, 0],
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "name": "images",
-              "type": "array",
-              "value": "=[\"IMAGE_URL_1\",\"IMAGE_URL_2\"]"
-            }
-          ]
-        }
-      }
-    },
-
-    {
-      "type": "n8n-nodes-base.splitOut",
-      "name": "Split Images",
-      "position": [-520, 0],
-      "parameters": {
-        "fieldToSplitOut": "images"
-      }
-    },
-
-    {
-      "type": "@n8n/n8n-nodes-langchain.openAi",
-      "name": "Analyze Style (OpenAI)",
-      "position": [-260, 0],
       "parameters": {
         "modelId": {
+          "__rl": true,
           "value": "gpt-5.1",
-          "mode": "list"
+          "mode": "list",
+          "cachedResultName": "GPT-5.1"
         },
         "responses": {
           "values": [
             {
               "role": "system",
-              "content": "PASTE YOUR SYSTEM PROMPT HERE"
+              "content": "=SYSTEM PROMPT (WITH BRAND AUTO-REPLACEMENT + PRODUCT PRESERVATION)\n\nYou are an Ad Image Reverse-Engineering + Style Transfer Prompt Generator.\nYour only job is to:\n\nAnalyze the inspiration image\n\nExtract its layout, composition, lighting, palette, typography, and mood\n\nRecreate the style only\n\nInsert MY PRODUCT IMAGE exactly as provided\n\nNEVER modify the product image\n\nReplace any brand name, placeholder, bracketed text, or label referring to a brand with the exact literal text: BRAND NAME HERE\n\nThis replacement rule includes:\n\n[Brand\u2019s]\n\n[Brand]\n\n[Brand Name]\n\n{Brand}\n\n\u201cbrand\u201d\n\n\u201cyour brand\u201d\n\n\u201ccompany name\u201d\n\nand any similar placeholder\n\nAlways output BRAND NAME HERE as the final brand name inside the prompt.\n\nPRODUCT PRESERVATION RULES (NON-NEGOTIABLE)\n\nDo not alter, redraw, regenerate, modify, distort, or reinterpret my product image.\n\nTreat my product image as a fixed, photographic asset.\n\nThe model must place my product image exactly as-is in the composition.\n\nNever change the shape, bottle type, label, angle, proportions, color, or details.\n\nEven if the inspiration image shows a different bottle, do NOT replicate it \u2014 always use my real one unchanged.\n\n\u2714 WHAT YOU MUST DO\n1. Extract style attributes only\n\nFrom the inspiration image, extract:\n\nLayout & object placement\n\nCamera angle\n\nColor palette\n\nLighting style\n\nBackground styling\n\nTypography & text treatment\n\nMood & tone\n\nNever replicate the product shown.\n\n2. Generate ONE final Nano Banana Pro prompt\n\nYour output must:\n\nRecreate the style, NOT the product\n\nInsert my product image as-is into the same relative spot/size/usage\n\nUse the brand name BRAND NAME HERE wherever a brand appears\n\nPreserve product image completely\n\nMatch Shopify+ level ad quality\n\nRecreate the text style if text is present\n\nCopy the scene layout, energy, color scheme, and composition\n\nDo NOT generate or redraw bottles or packaging\n\n\u2714 OUTPUT FORMAT (MANDATORY)\n\nRespond only with:\n\n[FRUITS AND VEGGIES PROMPT]\n<your final prompt here>\n\n\nNothing else.\n\nThe final prompt MUST include:\n\nExplicit: \u201cUse the provided product image exactly as-is, with no alteration, no regeneration, and no changes to shape, label, or proportions.\u201d\n\nExact placement instructions for my product\n\nBackground style\n\nLighting style\n\nTypography styling\n\nMood\n\nComposition rules\n\nShopify-ready quality markers"
             },
             {
               "type": "image",
-              "imageUrl": "={{ $json }}"
+              "imageUrl": "={{ $json.shuty }}"
             }
           ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        -272,
+        -144
+      ],
+      "id": "f15ec0c1-ed8d-47bb-ae7d-068005c7718f",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "YOUR_OPENAI_CRED_ID",
+          "name": "OpenAi account"
         }
       }
     },
-
     {
-      "type": "n8n-nodes-base.code",
-      "name": "Clean Prompt Output",
-      "position": [0, 0],
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        480,
+        0
+      ],
+      "id": "639bf15c-6fda-4480-b5ed-dce5df5b0b0b",
+      "name": "Wait",
+      "webhookId": "YOUR_WAIT_WEBHOOK_ID"
+    },
+    {
       "parameters": {
-        "jsCode": "return [{ json: { prompt: $json.output?.[0]?.content?.[0]?.text || '' } }];"
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5e56bfeb-8814-4d72-b1b5-d533e5c5b1a0",
+              "leftValue": "={{ $json.data.state }}",
+              "rightValue": "success",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1136,
+        0
+      ],
+      "id": "b17dc99f-e1e2-4ee6-a4df-b8626a8361e0",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "guildId": {
+          "__rl": true,
+          "value": "YOUR_GUILD_ID_HERE",
+          "mode": "list",
+          "cachedResultName": "Your Discord Server",
+          "cachedResultUrl": "https://discord.com/channels/YOUR_GUILD_ID_HERE"
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "YOUR_CHANNEL_ID_HERE",
+          "mode": "list",
+          "cachedResultName": "your-channel",
+          "cachedResultUrl": "https://discord.com/channels/YOUR_GUILD_ID_HERE/YOUR_CHANNEL_ID_HERE"
+        },
+        "content": "={{ $json.data.resultJson.extractUrl() }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        1472,
+        -128
+      ],
+      "id": "7a13d5a5-fdb0-4b8a-84b9-0bd85e2ab460",
+      "name": "Send a message",
+      "webhookId": "YOUR_DISCORD_WEBHOOK_ID",
+      "credentials": {
+        "discordBotApi": {
+          "id": "YOUR_DISCORD_CRED_ID",
+          "name": "Discord Bot account"
+        }
       }
     },
-
     {
-      "type": "n8n-nodes-base.httpRequest",
-      "name": "Create KIE Job",
-      "position": [260, 0],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b2de4236-fd73-41e1-b857-21c53d74632f",
+              "name": "shuty",
+              "value": "[\n  \"https://example.com/your-product-image-1.png\",\n  \"https://example.com/your-product-image-2.png\",\n  \"https://example.com/your-product-image-3.png\"\n]\n",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -720,
+        0
+      ],
+      "id": "2ef82ca7-3552-4ed6-b633-ae4ac9c5953b",
+      "name": "set brand info"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get ALL input items\nconst items = $input.all();\n\nreturn items.map(item => {\n  // Extract raw text from this specific item\n  const raw = item.json.output[0].content[0].text;\n\n  // Clean it for JSON safety\n  const cleaned = String(raw)\n    .replace(/\\\\/g, \"\\\\\\\\\")        // escape backslashes\n    .replace(/\"/g, '\\\\\"')          // escape quotes\n    .replace(/\\n/g, \"\\\\n\")         // escape newlines\n    .trim();\n\n  return {\n    json: {\n      prompt: cleaned\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        32,
+        0
+      ],
+      "id": "ea019188-0fd4-47fe-b2b5-33f3676386de",
+      "name": "clean"
+    },
+    {
       "parameters": {
         "method": "POST",
         "url": "https://api.kie.ai/api/v1/jobs/createTask",
@@ -78,56 +176,33 @@
           "parameters": [
             {
               "name": "Authorization",
-              "value": "Bearer YOUR_KIE_API_KEY"
+              "value": "Bearer YOUR_KIE_API_KEY_HERE"
             }
           ]
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "{ \"model\": \"nano-banana-pro\", \"input\": { \"prompt\": \"{{ $json.prompt }}\", \"image_input\": [\"PRODUCT_IMAGE_URL\"], \"aspect_ratio\": \"1:1\" } }"
-      }
-    },
-
-    {
-      "type": "n8n-nodes-base.set",
-      "name": "Store Task ID",
-      "position": [520, 0],
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "name": "taskId",
-              "value": "={{ $json.data.taskId }}",
-              "type": "string"
-            }
-          ]
-        }
-      }
-    },
-
-    {
-      "type": "n8n-nodes-base.wait",
-      "name": "Wait 5s",
-      "position": [760, 0],
-      "parameters": {
-        "amount": 5,
-        "unit": "seconds"
-      }
-    },
-
-    {
+        "jsonBody": "={\n  \"model\": \"nano-banana-pro\",\n  \"input\": {\n    \"prompt\": \"{{ $json.prompt }}\",\n    \"aspect_ratio\": \"1:1\",\n    \"resolution\": \"1K\",\n    \"image_input\": [\n      \"urproductphotolink_here!!!\"\n    ],\n    \"output_format\": \"png\"\n  }\n}\n",
+        "options": {}
+      },
       "type": "n8n-nodes-base.httpRequest",
-      "name": "Check KIE Status",
-      "position": [1000, 0],
+      "typeVersion": 4.3,
+      "position": [
+        272,
+        0
+      ],
+      "id": "bcf36ca4-f18c-4b79-9d06-501cead87345",
+      "name": "kie api"
+    },
+    {
       "parameters": {
-        "method": "GET",
         "url": "https://api.kie.ai/api/v1/jobs/recordInfo",
         "sendQuery": true,
         "queryParameters": {
           "parameters": [
             {
               "name": "taskId",
-              "value": "={{ $json.taskId }}"
+              "value": "={{ $('kie api').item.json.data.taskId }}"
             }
           ]
         },
@@ -136,25 +211,154 @@
           "parameters": [
             {
               "name": "Authorization",
-              "value": "Bearer YOUR_KIE_API_KEY"
+              "value": "Bearer YOUR_KIE_API_KEY_HERE"
             }
           ]
-        }
-      }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        688,
+        0
+      ],
+      "id": "3716d255-4bc4-4f03-95d2-36d92608a753",
+      "name": "kie api1"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "shuty",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -496,
+        -288
+      ],
+      "id": "570bcc31-c899-46b6-bfe2-c9ec575f9ff1",
+      "name": "Split Out"
     }
   ],
-
+  "pinData": {},
   "connections": {
-    "Manual Trigger": { "main": [[{ "node": "Set Inspiration Images" }]] },
-    "Set Inspiration Images": { "main": [[{ "node": "Split Images" }]] },
-    "Split Images": { "main": [[{ "node": "Analyze Style (OpenAI)" }]] },
-    "Analyze Style (OpenAI)": { "main": [[{ "node": "Clean Prompt Output" }]] },
-    "Clean Prompt Output": { "main": [[{ "node": "Create KIE Job" }]] },
-    "Create KIE Job": { "main": [[{ "node": "Store Task ID" }]] },
-    "Store Task ID": { "main": [[{ "node": "Wait 5s" }]] },
-    "Wait 5s": { "main": [[{ "node": "Check KIE Status" }]] }
+    "When clicking \u2018Execute workflow\u2019": {
+      "main": [
+        [
+          {
+            "node": "set brand info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "clean",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "kie api1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "set brand info": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "clean": {
+      "main": [
+        [
+          {
+            "node": "kie api",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "kie api": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "kie api1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
   },
-
   "active": false,
-  "settings": { "executionOrder": "v1" }
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f5938fda-8366-4341-b0de-8662f290e4f5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "YOUR_N8N_INSTANCE_ID"
+  },
+  "id": "cLr8DnK8hRChDIec",
+  "tags": []
 }
