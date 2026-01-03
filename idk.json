@@ -6,9 +6,10 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [-1024, 0],
-      "id": "manual_trigger",
+      "id": "b5f3584d-8607-48c5-8375-adac798b7c11",
       "name": "When clicking ‘Execute workflow’"
     },
+
     {
       "parameters": {
         "modelId": {
@@ -20,7 +21,7 @@
           "values": [
             {
               "role": "system",
-              "content": "=SYSTEM PROMPT (WITH BRAND AUTO-REPLACEMENT + PRODUCT PRESERVATION)\n\nYou are an Ad Image Reverse-Engineering + Style Transfer Prompt Generator.\n\n[UNCHANGED SYSTEM PROMPT CONTENT]\n"
+              "content": "SYSTEM PROMPT HERE"
             },
             {
               "type": "image",
@@ -32,68 +33,17 @@
       "type": "@n8n/n8n-nodes-langchain.openAi",
       "typeVersion": 2.1,
       "position": [-272, -144],
-      "id": "openai_node",
-      "name": "Message a model",
-      "credentials": {
-        "openAiApi": {
-          "name": "OPENAI_API (USER MUST CREATE)"
-        }
-      }
+      "id": "f15ec0c1-ed8d-47bb-ae7d-068005c7718f",
+      "name": "Message a model"
     },
-    {
-      "parameters": {},
-      "type": "n8n-nodes-base.wait",
-      "typeVersion": 1,
-      "position": [480, 0],
-      "id": "wait_node",
-      "name": "Wait"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "conditions": [
-            {
-              "leftValue": "={{ $json.data.state }}",
-              "rightValue": "success",
-              "operator": {
-                "type": "string",
-                "operation": "equals"
-              }
-            }
-          ]
-        }
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2,
-      "position": [1136, 0],
-      "id": "if_node",
-      "name": "If"
-    },
-    {
-      "parameters": {
-        "resource": "message",
-        "guildId": "DISCORD_GUILD_ID_HERE",
-        "channelId": "DISCORD_CHANNEL_ID_HERE",
-        "content": "={{ $json.data.resultJson.extractUrl() }}"
-      },
-      "type": "n8n-nodes-base.discord",
-      "typeVersion": 2,
-      "position": [1472, -128],
-      "id": "discord_node",
-      "name": "Send a message",
-      "credentials": {
-        "discordBotApi": {
-          "name": "DISCORD_BOT_TOKEN (USER MUST CREATE)"
-        }
-      }
-    },
+
     {
       "parameters": {
         "assignments": {
           "assignments": [
             {
               "name": "shuty",
-              "value": "=[\n  \"IMAGE_URL_1\",\n  \"IMAGE_URL_2\",\n  \"IMAGE_URL_3\"\n]",
+              "value": "=[\"IMAGE_URL_1\",\"IMAGE_URL_2\"]",
               "type": "array"
             }
           ]
@@ -102,19 +52,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3,
       "position": [-720, 0],
-      "id": "set_images",
-      "name": "Set inspiration images (USER INPUT)"
+      "id": "2ef82ca7-3552-4ed6-b633-ae4ac9c5953b",
+      "name": "Set inspiration images"
     },
-    {
-      "parameters": {
-        "jsCode": "// Clean model output\nreturn $input.all().map(item => ({ json: { prompt: item.json.output[0].content[0].text } }));"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [32, 0],
-      "id": "clean_node",
-      "name": "Clean prompt"
-    },
+
     {
       "parameters": {
         "method": "POST",
@@ -124,47 +65,24 @@
           "parameters": [
             {
               "name": "Authorization",
-              "value": "Bearer KIE_API_KEY_HERE"
+              "value": "Bearer YOUR_KIE_API_KEY"
             }
           ]
         },
         "sendBody": true,
-        "jsonBody": "={\n  \"model\": \"nano-banana-pro\",\n  \"input\": {\n    \"prompt\": \"{{ $json.prompt }}\",\n    \"aspect_ratio\": \"1:1\",\n    \"resolution\": \"1K\",\n    \"image_input\": [\"PRODUCT_IMAGE_URL_HERE\"],\n    \"output_format\": \"png\"\n  }\n}"
+        "jsonBody": "{}"
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
       "position": [272, 0],
-      "id": "kie_create",
-      "name": "KIE – Create Job"
-    },
-    {
-      "parameters": {
-        "url": "https://api.kie.ai/api/v1/jobs/recordInfo",
-        "sendQuery": true,
-        "queryParameters": {
-          "parameters": [
-            {
-              "name": "taskId",
-              "value": "={{ $('kie_create').item.json.data.taskId }}"
-            }
-          ]
-        },
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "Bearer KIE_API_KEY_HERE"
-            }
-          ]
-        }
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4,
-      "position": [688, 0],
-      "id": "kie_status",
-      "name": "KIE – Check Status"
+      "id": "bcf36ca4-f18c-4b79-9d06-501cead87345",
+      "name": "KIE API (CONFIGURE)",
+      "disabled": true
     }
   ],
-  "active": false
+  "connections": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  }
 }
