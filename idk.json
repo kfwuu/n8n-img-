@@ -138,7 +138,7 @@
             {
               "id": "b2de4236-fd73-41e1-b857-21c53d74632f",
               "name": "shuty",
-              "value": "[\n  \"https://example.com/your-product-image-1.png\",\n  \"https://example.com/your-product-image-2.png\",\n  \"https://example.com/your-product-image-3.png\"\n]\n",
+              "value": "[\n  \"https://example.com/your-inspiration-image-1.png\",\n  \"https://example.com/your-inspiration-image-2.png\",\n  \"https://example.com/your-inspiration-image-3.png\"\n]\n",
               "type": "array"
             }
           ]
