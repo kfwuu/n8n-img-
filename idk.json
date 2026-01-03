@@ -2,18 +2,43 @@
   "name": "img copy (PUBLIC TEMPLATE)",
   "nodes": [
     {
-      "parameters": {},
       "type": "n8n-nodes-base.manualTrigger",
-      "typeVersion": 1,
-      "position": [-1024, 0],
-      "id": "b5f3584d-8607-48c5-8375-adac798b7c11",
-      "name": "When clicking ‘Execute workflow’"
+      "name": "Manual Trigger",
+      "position": [-1000, 0]
     },
 
     {
+      "type": "n8n-nodes-base.set",
+      "name": "Set Inspiration Images",
+      "position": [-760, 0],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "images",
+              "type": "array",
+              "value": "=[\"IMAGE_URL_1\",\"IMAGE_URL_2\"]"
+            }
+          ]
+        }
+      }
+    },
+
+    {
+      "type": "n8n-nodes-base.splitOut",
+      "name": "Split Images",
+      "position": [-520, 0],
+      "parameters": {
+        "fieldToSplitOut": "images"
+      }
+    },
+
+    {
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "name": "Analyze Style (OpenAI)",
+      "position": [-260, 0],
       "parameters": {
         "modelId": {
-          "__rl": true,
           "value": "gpt-5.1",
           "mode": "list"
         },
@@ -21,42 +46,30 @@
           "values": [
             {
               "role": "system",
-              "content": "SYSTEM PROMPT HERE"
+              "content": "PASTE YOUR SYSTEM PROMPT HERE"
             },
             {
               "type": "image",
-              "imageUrl": "={{ $json.shuty }}"
+              "imageUrl": "={{ $json }}"
             }
           ]
         }
-      },
-      "type": "@n8n/n8n-nodes-langchain.openAi",
-      "typeVersion": 2.1,
-      "position": [-272, -144],
-      "id": "f15ec0c1-ed8d-47bb-ae7d-068005c7718f",
-      "name": "Message a model"
+      }
     },
 
     {
+      "type": "n8n-nodes-base.code",
+      "name": "Clean Prompt Output",
+      "position": [0, 0],
       "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "name": "shuty",
-              "value": "=[\"IMAGE_URL_1\",\"IMAGE_URL_2\"]",
-              "type": "array"
-            }
-          ]
-        }
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3,
-      "position": [-720, 0],
-      "id": "2ef82ca7-3552-4ed6-b633-ae4ac9c5953b",
-      "name": "Set inspiration images"
+        "jsCode": "return [{ json: { prompt: $json.output?.[0]?.content?.[0]?.text || '' } }];"
+      }
     },
 
     {
+      "type": "n8n-nodes-base.httpRequest",
+      "name": "Create KIE Job",
+      "position": [260, 0],
       "parameters": {
         "method": "POST",
         "url": "https://api.kie.ai/api/v1/jobs/createTask",
@@ -70,19 +83,78 @@
           ]
         },
         "sendBody": true,
-        "jsonBody": "{}"
-      },
+        "specifyBody": "json",
+        "jsonBody": "{ \"model\": \"nano-banana-pro\", \"input\": { \"prompt\": \"{{ $json.prompt }}\", \"image_input\": [\"PRODUCT_IMAGE_URL\"], \"aspect_ratio\": \"1:1\" } }"
+      }
+    },
+
+    {
+      "type": "n8n-nodes-base.set",
+      "name": "Store Task ID",
+      "position": [520, 0],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "taskId",
+              "value": "={{ $json.data.taskId }}",
+              "type": "string"
+            }
+          ]
+        }
+      }
+    },
+
+    {
+      "type": "n8n-nodes-base.wait",
+      "name": "Wait 5s",
+      "position": [760, 0],
+      "parameters": {
+        "amount": 5,
+        "unit": "seconds"
+      }
+    },
+
+    {
       "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4,
-      "position": [272, 0],
-      "id": "bcf36ca4-f18c-4b79-9d06-501cead87345",
-      "name": "KIE API (CONFIGURE)",
-      "disabled": true
+      "name": "Check KIE Status",
+      "position": [1000, 0],
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.kie.ai/api/v1/jobs/recordInfo",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "taskId",
+              "value": "={{ $json.taskId }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_KIE_API_KEY"
+            }
+          ]
+        }
+      }
     }
   ],
-  "connections": {},
+
+  "connections": {
+    "Manual Trigger": { "main": [[{ "node": "Set Inspiration Images" }]] },
+    "Set Inspiration Images": { "main": [[{ "node": "Split Images" }]] },
+    "Split Images": { "main": [[{ "node": "Analyze Style (OpenAI)" }]] },
+    "Analyze Style (OpenAI)": { "main": [[{ "node": "Clean Prompt Output" }]] },
+    "Clean Prompt Output": { "main": [[{ "node": "Create KIE Job" }]] },
+    "Create KIE Job": { "main": [[{ "node": "Store Task ID" }]] },
+    "Store Task ID": { "main": [[{ "node": "Wait 5s" }]] },
+    "Wait 5s": { "main": [[{ "node": "Check KIE Status" }]] }
+  },
+
   "active": false,
-  "settings": {
-    "executionOrder": "v1"
-  }
+  "settings": { "executionOrder": "v1" }
 }
